@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>成功</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+    </head>
+    <body>
+        <div id="msg">上传成功，将在3秒后返回</div>
+        <a href="">立即返回</a>
+        <script>
+            let k = 2
+            setInterval(() => {
+                if (k <= 0)
+                {
+                    history.back()
+                }
+                document.getElementById('msg').innerHTML = `上传成功，将在${k}秒后返回`
+                k -= 1
+            }, 1000)
+        </script>
+    </body>
+</html>

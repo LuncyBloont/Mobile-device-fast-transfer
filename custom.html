@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>文件传输助手</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <style>
+            input {
+                width: 80%;
+                margin: auto auto;
+                border: 1px solid #F00;
+                background: #4566F2;
+                display: block;
+                box-sizing: border-box;
+                position: absolute;
+            }
+            .center {
+                margin-left: 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .But {
+                width: max-content;
+                box-sizing: border-box;
+                border-radius: 16px;
+                padding: 0.5cm 1cm;
+                background: #7876FC;
+                color: white;
+                margin: 6px;
+                text-align: center;
+                vertical-align: middle;
+                font-size: 16pt;
+                box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 12px 1px;
+                transform: translateX(-50%);
+                margin-left: 50%;
+                cursor: pointer;
+                transition: all ease 0.4s;
+            }
+            .But_hover {
+                background: #4757FF;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="position: absolute;">
+            <form method="post" action="" enctype="multipart/form-data">
+                <input id="ifile" type="file" name="file" />
+                <input id="isubmit" type="submit" value="传送" />
+            </form>
+        </div>
+        <div class="center">
+            <div id="name" style="text-align: center;">未选择文件</div>
+            <div id="bfile" class="But">选择</div>
+            <div id="bsubmit" class="But">提交</div>
+        </div>
+        <script>
+            let real = []
+            let shell = []
+            let clsName = []
+
+            real.push('ifile')
+            real.push('isubmit')
+            shell.push('bfile')
+            shell.push('bsubmit')
+            clsName.push('But')
+            clsName.push('But')
+
+            for (let i = 0; i < Math.min(real.length, shell.length); ++i) {
+                let rid = real[i]
+                let sid = shell[i]
+                let r = document.getElementById(rid)
+                let s = document.getElementById(sid)
+                r.style.position = 'fixed'
+                r.style.zIndex = '100'
+                r.style.opacity = '0.0'
+                r.style.left = s.getBoundingClientRect().left + 'px'
+                r.style.top = s.getBoundingClientRect().top + 'px'
+                r.style.width = s.getBoundingClientRect().width + 'px'
+                r.style.height = s.getBoundingClientRect().height + 'px'
+                r.addEventListener('mouseenter', () => {
+                    s.classList.add(clsName[i] + '_hover')
+                })
+                r.addEventListener('mouseleave', () => {
+                    s.classList.remove(clsName[i] + '_hover')
+                })
+            }
+
+            document.getElementById('ifile').addEventListener('change', () => {
+                let d = document.getElementById('ifile')
+                if (d.value != '') {
+                    document.getElementById('name').innerHTML = d.value
+                } else {
+                    document.getElementById('name').innerHTML = '未选择文件'
+                }
+            })
+
+        </script>
+    </body>
+</html>
