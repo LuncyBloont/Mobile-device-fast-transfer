@@ -26,7 +26,8 @@ class ServerCore(Server.BaseHTTPRequestHandler):
     def do_POST(self):
         form = cgi.FieldStorage(self.rfile, self.headers, environ={ 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': self.headers['Content-Type'] })
         
-        path = 'tmp/' + form['file'].filename
+        fname = form['file'].filename
+        path = 'tmp/' + fname
 
         rgx = re.compile('(.*\()([0-9]+)(\)\.[^.]+$)')
         rgx2 = re.compile('(.*\()([0-9]+)(\)$)')
@@ -52,6 +53,10 @@ class ServerCore(Server.BaseHTTPRequestHandler):
         with open(path, 'wb') as fw:
             data = form['file'].file.read()
             fw.write(data)
+            print('file {} has been save to {}'.format(fname, os.path.abspath(path)))
+            print(os.path.abspath(path))
+            print('file://' + os.path.abspath(path))
+            print('the path and URL listed above')
         
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
