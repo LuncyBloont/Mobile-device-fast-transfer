@@ -26,7 +26,7 @@
                 padding: 0.5cm 1cm;
                 background: #7876FC;
                 color: white;
-                margin: 6px;
+                margin: 12px;
                 text-align: center;
                 vertical-align: middle;
                 font-size: 16pt;
@@ -39,31 +39,133 @@
             .But_hover {
                 background: #4757FF;
             }
+            .topush {
+                font-size: 12pt;
+                color: #AAACEE;
+                padding: 6px;
+                box-sizing: border-box;
+            }
+            .mtitle {
+                font-size: 10pt;
+                color: #999;
+                padding: 12px;   
+            }
+            .list_box {
+                max-width: 95%;
+                width: 300pt;
+                box-sizing: border-box;
+                margin: auto auto;
+                background: rgba(0, 0, 0, 0.015);
+                padding: 16px 6px;
+                color: #AAA;
+                font-size: 12pt;
+                min-height: 320pt;
+                overflow-x: hidden;
+                overflow-y: auto;
+                border-radius: 6px;
+                scrollbar-width: none;
+            }
+            .list_box::-webkit-scrollbar {
+                display: none;
+            }
+            .list {
+                width: 95%;
+                font-size: 12pt;
+                color: #67CCA3;
+                border-style: dotted;
+                padding: 6px;
+                margin: 3px auto;
+                box-sizing: border-box;
+                border-width: 1px;
+                border-color: #45AA98;
+                background: white;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+            .list::-webkit-scrollbar {
+                display: none;
+            }
+            .list:hover {
+                background: rgba(0, 0, 0, 0.1);
+            }
+            .input {
+                width: 290pt;
+                max-width: 95%;
+                box-sizing: border-box;
+                margin: 5px auto;
+                transform: translateX(0px);
+                position: relative;
+                padding: 4px;
+                font-size: 12pt;
+                text-align: center;
+                border-radius: 6px;
+                border-color: rgba(78, 170, 164, 0.4);
+                border-width: 1px;
+                border-style: solid;
+                background: none;
+                color: #888;
+            }
+            .input::placeholder {
+                color: #CCC;
+            }
+            .detail {
+                font-size: 8pt;
+                color: #AAA;
+                margin: 8px;
+            }
         </style>
     </head>
     <body>
         <div style="position: absolute;">
             <form method="post" action="" enctype="multipart/form-data">
                 <input id="ifile" type="file" name="file" />
-                <input id="isubmit" type="submit" value="传送" />
+                <input id="isubmit" type="submit" name="submit" value="传送" />
+                <input id="ishare" type="submit" name="share" value="分享" />
             </form>
         </div>
         <div class="center">
-            <div id="name" style="text-align: center;">未选择文件</div>
+            <div id="name" class="topush" style="text-align: center;">未选择文件</div>
             <div id="bfile" class="But">选择</div>
             <div id="bsubmit" class="But">提交</div>
+            <div id="bshare" class="But">分享</div>
+            <div class="mtitle" style="text-align: center;">可下载文件：</div>
+            <input class="input" id="filter" placeholder="search filter" />
+            <div class="list_box" id="list_box" style="text-align: center;">
+                这里没有东西TAT
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+                <div>34</div>
+
+            </div>
         </div>
         <script>
-            let real = []
-            let shell = []
-            let clsName = []
-
-            real.push('ifile')
-            real.push('isubmit')
-            shell.push('bfile')
-            shell.push('bsubmit')
-            clsName.push('But')
-            clsName.push('But')
+            let real = ['ifile', 'isubmit', 'ishare']
+            let shell = ['bfile', 'bsubmit', 'bshare']
+            let clsName = ['But', 'But', 'But']
 
             for (let i = 0; i < Math.min(real.length, shell.length); ++i) {
                 let rid = real[i]
@@ -93,6 +195,94 @@
                     document.getElementById('name').innerHTML = '未选择文件'
                 }
             })
+
+            let shared = []
+
+            function layout() {
+                let box = document.getElementById('list_box')
+                box.style.height = (window.innerHeight - box.getBoundingClientRect().top - 32) + 'px'
+            }
+
+            function listAll()
+            {
+                let filter = document.getElementById('filter')
+
+                let filters = (filter.value + '').split(' ')
+                let filterReg = []
+
+                for (let i in filters) {
+                    filterReg.push(new RegExp('.*' + filters[i] + '.*', 'i'))
+                }
+
+                let lb = document.getElementById('list_box')
+                lb.innerHTML = ''
+                for (let f in shared) {
+                    let parts = shared[f]['name'].split(' ')
+                    let v = false
+
+                    for (let i in filterReg) {
+                        for (let j in parts) {
+                            let arr = parts[j].match(filterReg[i])
+                            if (arr && arr.length > 0)
+                            {
+                                v = true
+                                break
+                            }
+                        }
+                    }
+
+                    if (!v) {
+                        continue
+                    }
+
+                    let but = document.createElement('div')
+                    info = shared[f]
+                    but.innerHTML = info['name']
+                    let fname = info['name']
+                    but.addEventListener('click', () => {
+                        window.open('download/' + fname)
+                    })
+                    but.style.textAlign = 'center'
+                    but.classList.add('list')
+
+                    let dtl = document.createElement('div')
+                    dtl.innerHTML = info['size'] + 'KB ' + info['date']
+                    dtl.classList.add('detail')
+                    dtl.style.textAlign = 'center'
+
+                    but.append(dtl)
+
+                    lb.append(but)
+                }
+            }
+
+            function requestAll() {
+                let req = new XMLHttpRequest()
+                req.addEventListener('load', () => {
+                    try {
+                        let l = req.response['list']
+                        shared = l
+                    } catch (err) {
+                        console.log(err)
+                    }
+                    listAll()
+                })
+
+                req.open('GET', 'list')
+                req.responseType = 'json'
+                req.send()
+            }
+
+            layout()
+            setInterval(layout, 100)
+
+            requestAll()
+            setInterval(requestAll, 5000)            
+
+            listAll()
+            setInterval(listAll, 6000)
+
+            document.getElementById('filter').addEventListener('keyup', () => { listAll() })
 
         </script>
     </body>

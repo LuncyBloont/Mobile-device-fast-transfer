@@ -6,6 +6,8 @@ import threading
 import cgi
 import os
 import re
+import json 
+import time
 
 nets = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 nets.connect(('8.8.8.8', 80))
@@ -15,8 +17,56 @@ ip = '0.0.0.0'
 port = 8933
 
 class ServerCore(Server.BaseHTTPRequestHandler):
+    def checkDir(self):
+        if not os.path.exists('share'):
+            os.mkdir('share')
+        if not os.path.exists('tmp'):
+            os.mkdir('tmp')
+        
     def do_GET(self):
-        print(self.request)
+        self.checkDir()
+        
+        paths = self.path.split('/')
+        print(paths)
+
+        if len(paths) > 1:
+            if paths[-1].find('favicon') == 0:
+                self.send_response(200)
+                self.send_header('Content-Type', 'image/png')
+                self.end_headers()
+                with open('icon.png', 'rb') as fr:
+                    ctt = fr.read()
+                    self.wfile.write(ctt)
+                return
+            elif paths[1] == 'list':
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/json; chartset=utf-8')
+                self.end_headers()
+                li = os.listdir('share')
+                lid = []
+                for k in li:
+                    fn = k
+                    fs = (os.path.getsize(os.path.join('share', fn)) * 100 // 1024) / 100
+                    fd = os.path.getmtime(os.path.join('share', fn))
+                    lid.append({ 'name': fn, 'size': fs, 'date': time.ctime(fd) })
+                obj = { 'list': lid }
+                self.wfile.write(bytes(json.dumps(obj), 'utf-8'))
+                return
+            elif paths[1] == 'download':
+                file = os.path.join('share', paths[2])
+                if file.find('?') != -1:
+                    file = file[0:file.find('?')]
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/octet-stream')
+                self.end_headers()
+                with open(file, 'rb') as f:
+                    self.wfile.write(f.read())
+                
+                return 
+            elif paths[1] != '':
+                self.send_response(404)
+                return
+        
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
@@ -24,10 +74,14 @@ class ServerCore(Server.BaseHTTPRequestHandler):
             self.wfile.write(bytes(f.read(), 'utf-8'))
     
     def do_POST(self):
+        self.checkDir()
+        
         form = cgi.FieldStorage(self.rfile, self.headers, environ={ 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': self.headers['Content-Type'] })
         
+        dirname = 'share' if 'share' in form else 'tmp'
+        
         fname = form['file'].filename
-        path = 'tmp/' + fname
+        path = dirname + '/' + fname
 
         rgx = re.compile('(.*\()([0-9]+)(\)\.[^.]+$)')
         rgx2 = re.compile('(.*\()([0-9]+)(\)$)')
@@ -52,11 +106,14 @@ class ServerCore(Server.BaseHTTPRequestHandler):
 
         with open(path, 'wb') as fw:
             data = form['file'].file.read()
-            fw.write(data)
-            print('file {} has been save to {}'.format(fname, os.path.abspath(path)))
-            print(os.path.abspath(path))
-            print('file://' + os.path.abspath(path))
-            print('the path and URL listed above')
+            if len(fname) > 0:
+                fw.write(data)
+                print('file {} has been save to {}'.format(fname, os.path.abspath(path)))
+                print(os.path.abspath(path))
+                print('file://' + os.path.abspath(path))
+                print('the path and URL listed above')
+            else:
+                print('empty filename {}, skip.'.format(fname))
         
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
