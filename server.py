@@ -8,6 +8,9 @@ import os
 import re
 import json 
 import time
+import sys
+
+termOnly = True if len(sys.argv) > 1 and sys.argv[1] == '-t' else False
 
 nets = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 nets.connect(('8.8.8.8', 80))
@@ -156,7 +159,6 @@ class ServerCore(Server.BaseHTTPRequestHandler):
         self.end_headers()
         with open('done.html', 'r', encoding='utf-8') as f:
             self.wfile.write(bytes(f.read(), 'utf-8'))
-
         
 server = Server.HTTPServer((ip, port), ServerCore)
 
@@ -165,16 +167,29 @@ def run():
     server.serve_forever()
 
 t = threading.Thread(target=run)
+t.daemon = True
 t.start()
 
-img = qrcode.make('http://' + local_ip + ':' + str(port))
 print('Use mobile device visit http://' + local_ip + ':' + str(port))
-with open('tmp.png', 'wb') as fw:
-    img.save(fw)
 
-cvimg = cv2.imread('tmp.png')
-cv2.imshow('scan it', cvimg)
-cv2.waitKey()
+if not termOnly:
+    img = qrcode.make('http://' + local_ip + ':' + str(port))
+    with open('tmp.png', 'wb') as fw:
+        img.save(fw)
 
-server.shutdown()
+    cvimg = cv2.imread('tmp.png')
+    cv2.imshow('scan it', cvimg)
+    try:
+        cv2.waitKey()
+    except KeyboardInterrupt:
+        pass
+    server.shutdown()
+
+if termOnly:
+    try:
+        while True:
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        server.shutdown()
+
 print('Bye')

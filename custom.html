@@ -211,6 +211,9 @@
                 let filterReg = []
 
                 for (let i in filters) {
+                    if (filters[i].length == 0) {
+                        continue
+                    }
                     filterReg.push(new RegExp('.*' + filters[i] + '.*', 'i'))
                 }
 
@@ -218,14 +221,14 @@
                 lb.innerHTML = ''
                 for (let f in shared) {
                     let parts = shared[f]['name'].split(' ')
-                    let v = false
+                    let v = true
 
                     for (let i in filterReg) {
                         for (let j in parts) {
                             let arr = parts[j].match(filterReg[i])
-                            if (arr && arr.length > 0)
+                            if (!(arr && arr.length > 0))
                             {
-                                v = true
+                                v = false
                                 break
                             }
                         }
