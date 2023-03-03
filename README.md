@@ -12,7 +12,7 @@ If you only need a server run in terminal, the Python3 is only required.
 * Clone the repository.
 * Change dir into the repository.
 * Run `$ python server.py` in project folder.
-* Scan the QR code in your PC screen. (The mobile device network should be in same WiFi with the PC)
+* Scan the QR code in your PC screen. (The mobile device network should be in same WLAN with the PC)
 
 `-v` is used to run a terminal only server: `$ python server.py -v`.
 
