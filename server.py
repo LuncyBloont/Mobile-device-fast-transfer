@@ -16,6 +16,21 @@ local_ip = nets.getsockname()[0]
 ip = '0.0.0.0'
 port = 8933
 
+fileType = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'jfif': 'image/jpeg',
+    'jpe': 'image/jpeg',
+    'gif': 'image/gif',
+    'ppm': 'application/x-ppm',
+    'exe': 'application/msdownload',
+    'mp4': 'video/mp4',
+    'mp3': 'audio/mp3',
+    'wav': 'audio/wav',
+    'pdf': 'application/pdf'
+}
+
 class ServerCore(Server.BaseHTTPRequestHandler):
     def checkDir(self):
         if not os.path.exists('share'):
@@ -24,10 +39,14 @@ class ServerCore(Server.BaseHTTPRequestHandler):
             os.mkdir('tmp')
         
     def do_GET(self):
+        global fileType
+        
         self.checkDir()
         
         paths = self.path.split('/')
         print(paths)
+        
+        typere = re.compile('.*\.([^\.]+)$')
 
         if len(paths) > 1:
             if paths[-1].find('favicon') == 0:
@@ -57,10 +76,27 @@ class ServerCore(Server.BaseHTTPRequestHandler):
                 if file.find('?') != -1:
                     file = file[0:file.find('?')]
                 self.send_response(200)
-                self.send_header('Content-Type', 'application/octet-stream')
-                self.end_headers()
+                
+                ftype = 'application/octet-stream'
+                ftypeArr = typere.match(paths[2])
+                if ftypeArr:
+                    typepart = ftypeArr[1]
+                    for t in fileType.keys():
+                        if re.match(t + '$', typepart, re.I):
+                            ftype = fileType[t]
+                            break
+                
+                data = None
+                loaded = False
                 with open(file, 'rb') as f:
-                    self.wfile.write(f.read())
+                    data = f.read()
+                    loaded = True
+                
+                self.send_header('Content-Type', '{}'.format(ftype))
+                self.send_header('Content-Disposition', 'attachment; filename="{}"'.format(paths[2]))
+                self.send_header('Content-Length', len(data))
+                self.end_headers()
+                self.wfile.write(data)
                 
                 return 
             elif paths[1] != '':
