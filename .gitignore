@@ -1,3 +1,5 @@
 /tmp
 /tmp.png
 /share
+/.*
+!/.gitignore

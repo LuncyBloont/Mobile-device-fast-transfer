@@ -1,12 +1,12 @@
 import http.server as Server
 import qrcode
 import socket
-import cv2
 import threading
+import cv2
 import cgi
 import os
 import re
-import json 
+import json
 import time
 import sys
 
@@ -34,22 +34,23 @@ fileType = {
     'pdf': 'application/pdf'
 }
 
+
 class ServerCore(Server.BaseHTTPRequestHandler):
     def checkDir(self):
         if not os.path.exists('share'):
             os.mkdir('share')
         if not os.path.exists('tmp'):
             os.mkdir('tmp')
-        
+
     def do_GET(self):
         global fileType
-        
+
         self.checkDir()
-        
+
         paths = self.path.split('/')
         print(paths)
-        
-        typere = re.compile('.*\.([^\.]+)$')
+
+        typere = re.compile('.*\.([^.]+)$')
 
         if len(paths) > 1:
             if paths[-1].find('favicon') == 0:
@@ -79,7 +80,7 @@ class ServerCore(Server.BaseHTTPRequestHandler):
                 if file.find('?') != -1:
                     file = file[0:file.find('?')]
                 self.send_response(200)
-                
+
                 ftype = 'application/octet-stream'
                 ftypeArr = typere.match(paths[2])
                 if ftypeArr:
@@ -88,37 +89,38 @@ class ServerCore(Server.BaseHTTPRequestHandler):
                         if re.match(t + '$', typepart, re.I):
                             ftype = fileType[t]
                             break
-                
+
                 data = None
                 loaded = False
                 with open(file, 'rb') as f:
                     data = f.read()
                     loaded = True
-                
+
                 self.send_header('Content-Type', '{}'.format(ftype))
                 self.send_header('Content-Disposition', 'attachment; filename="{}"'.format(paths[2]))
-                self.send_header('Content-Length', len(data))
+                self.send_header('Content-Length', str(len(data)))
                 self.end_headers()
                 self.wfile.write(data)
-                
+
                 return 
             elif paths[1] != '':
                 self.send_response(404)
                 return
-        
+
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
         with open('custom.html', 'r', encoding='utf-8') as f:
             self.wfile.write(bytes(f.read(), 'utf-8'))
+
     
     def do_POST(self):
         self.checkDir()
-        
+
         form = cgi.FieldStorage(self.rfile, self.headers, environ={ 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': self.headers['Content-Type'] })
-        
+
         dirname = 'share' if 'share' in form else 'tmp'
-        
+
         fname = form['file'].filename
         path = dirname + '/' + fname
 
@@ -153,27 +155,30 @@ class ServerCore(Server.BaseHTTPRequestHandler):
                 print('the path and URL listed above')
             else:
                 print('empty filename {}, skip.'.format(fname))
-        
+
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
         with open('done.html', 'r', encoding='utf-8') as f:
             self.wfile.write(bytes(f.read(), 'utf-8'))
-        
+
+
 server = Server.HTTPServer((ip, port), ServerCore)
+
 
 def run():
     global server
     server.serve_forever()
 
+
 t = threading.Thread(target=run)
 t.daemon = True
 t.start()
 
-print('Use mobile device visit http://' + local_ip + ':' + str(port))
+print('Use mobile device visit https://' + local_ip + ':' + str(port))
 
 if not termOnly:
-    img = qrcode.make('http://' + local_ip + ':' + str(port))
+    img = qrcode.make('https://' + local_ip + ':' + str(port))
     with open('tmp.png', 'wb') as fw:
         img.save(fw)
 
